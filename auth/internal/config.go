@@ -23,7 +23,7 @@ type DBConfig struct {
 func getEnv(key string, defaultValue string) any {
 	value := os.Getenv(key)
 	if value != "" {
-		return key
+		return value
 	}
 	return defaultValue
 }
