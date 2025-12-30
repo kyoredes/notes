@@ -8,8 +8,10 @@ import (
 )
 
 func main() {
+	internal.Init()
 	cfg := internal.NewConfig()
 	DBConfig := internal.NewDBConfig()
+	internal.InitLogger(cfg.LoggingMode)
 	logger := internal.Logger
 
 	logger.Debug("config", zap.Any("cfg", cfg))
@@ -19,7 +21,7 @@ func main() {
 
 	router.GET("/ping", pingHandler)
 
-	router.Run(":8000")
+	router.Run("0.0.0.0:8000")
 }
 
 func pingHandler(context *gin.Context) {

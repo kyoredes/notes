@@ -1,11 +1,12 @@
 package internal
 
 import (
-	"os"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Debug                  bool
+	LoggingMode            string
 	JWTSecretKey           string
 	AccessTokenExpiration  int
 	RefreshTokenExpiration int
@@ -20,22 +21,16 @@ type DBConfig struct {
 	DBTimeout int
 }
 
-func getEnv(key string, defaultValue string) any {
-	value := os.Getenv(key)
-	if value != "" {
-		return value
-	}
-	return defaultValue
-}
-
 func NewConfig() *Config {
-	debug := getEnv("DEBUG", "false").(bool)
-	jwtSecretKey := getEnv("JWT_SECRET_KEY", "secret").(string)
-	accessTokenExpiration := getEnv("ACCESS_TOKEN_EXPIRATION", "3600").(int)
-	refreshTokenExpiration := getEnv("REFRESH_TOKEN_EXPIRATION", "86400").(int)
+	debug := viper.GetBool("DEBUG")
+	loggingMode := viper.GetString("LOGGING_MODE")
+	jwtSecretKey := viper.GetString("JWT_SECRET_KEY")
+	accessTokenExpiration := viper.GetInt("ACCESS_TOKEN_EXPIRATION")
+	refreshTokenExpiration := viper.GetInt("REFRESH_TOKEN_EXPIRATION")
 
 	return &Config{
 		Debug:                  debug,
+		LoggingMode:            loggingMode,
 		JWTSecretKey:           jwtSecretKey,
 		AccessTokenExpiration:  accessTokenExpiration,
 		RefreshTokenExpiration: refreshTokenExpiration,
@@ -43,12 +38,12 @@ func NewConfig() *Config {
 }
 
 func NewDBConfig() *DBConfig {
-	host := getEnv("DB_HOST", "localhost").(string)
-	port := getEnv("DB_PORT", "5432").(string)
-	user := getEnv("DB_USER", "postgres").(string)
-	password := getEnv("DB_PASSWORD", "postgres").(string)
-	dbName := getEnv("DB_NAME", "postgres").(string)
-	dbTimeout := getEnv("DB_TIMEOUT", "10").(int)
+	host := viper.GetString("DB_HOST")
+	port := viper.GetString("DB_PORT")
+	user := viper.GetString("DB_USER")
+	password := viper.GetString("DB_PASSWORD")
+	dbName := viper.GetString("DB_NAME")
+	dbTimeout := viper.GetInt("DB_TIMEOUT")
 
 	return &DBConfig{
 		Host:      host,
@@ -58,4 +53,20 @@ func NewDBConfig() *DBConfig {
 		DBName:    dbName,
 		DBTimeout: dbTimeout,
 	}
+}
+
+func Init() {
+	viper.AutomaticEnv()
+	viper.SetDefault("DB_HOST", "localhost")
+	viper.SetDefault("DB_PORT", "5432")
+	viper.SetDefault("DB_USER", "postgres")
+	viper.SetDefault("DB_PASSWORD", "postgres")
+	viper.SetDefault("DB_NAME", "postgres")
+	viper.SetDefault("DB_TIMEOUT", 10)
+
+	viper.SetDefault("DEBUG", false)
+	viper.SetDefault("LOGGING_MODE", "text")
+	viper.SetDefault("JWT_SECRET_KEY", "secret")
+	viper.SetDefault("ACCESS_TOKEN_EXPIRATION", 3600)
+	viper.SetDefault("REFRESH_TOKEN_EXPIRATION", 86400)
 }
