@@ -1,27 +1,58 @@
 package main
 
 import (
-	"auth/internal"
+	"auth/internal/config"
+	"auth/internal/logging"
+	"auth/internal/server"
+	"context"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func main() {
-	internal.Init()
-	cfg := internal.NewConfig()
-	DBConfig := internal.NewDBConfig()
-	internal.InitLogger(cfg.LoggingMode)
-	logger := internal.Logger
+	config.Init()
+	cfg := config.NewConfig()
 
-	logger.Debug("config", zap.Any("cfg", cfg))
-	logger.Debug("db config", zap.Any("db config", DBConfig))
+	logging.InitLogger(cfg.LoggingMode)
+	logger := logging.Logger
 
-	router := gin.Default()
+	logger.Info("Starting server...")
 
-	router.GET("/ping", pingHandler)
+	h := handler.NewHandler()
 
-	router.Run("0.0.0.0:8000")
+	srv, err := server.NewServer(cfg, h)
+
+	if err != nil {
+		logger.Fatal("Error while starting server")
+	}
+	go func() {
+		if err := srv.Start(); err != nil {
+			logger.Fatal("Error while starting server")
+		}
+	}
+
+	logger.Info("Server started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	logger.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Stop(ctx); err != nil {
+		logger.Fatal("Error while stopping server")
+	}
+
+	logger.Info("Server stopped")
+
+
+
 }
 
 func pingHandler(context *gin.Context) {

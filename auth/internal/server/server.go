@@ -2,26 +2,43 @@ package server
 
 import (
 	"auth/internal/config"
-	"fmt"
-
-	"github.com/gin-gonic/gin"
+	"auth/internal/handler"
+	"context"
+	"errors"
+	"net/http"
 )
 
 type Server struct {
-	cfg    *config.Config
-	cfgDB  *config.DBConfig
-	router *gin.Engine
+	cfg        *config.Config
+	httpServer *http.Server
 }
 
 func (s *Server) Start() error {
-	address := fmt.Sprintf("%s:%s", s.cfgDB.Host, s.cfgDB.Port)
-	return s.router.Run(address)
+	return s.httpServer.ListenAndServe()
 }
 
-func (s *Server) NewServer(cfg *config.Config, cfgDB *config.DBConfig) (*Server, error) {
-	s.cfg = cfg
-	s.cfgDB = cfgDB
-	s.router = gin.Default()
+func (s *Server) Stop(ctx context.Context) error {
+	return s.httpServer.Shutdown(ctx)
+}
+func NewServer(cfg *config.Config, h *handler.Handler) (*Server, error) {
+	router := router.SetupRouter(h)
+	if cfg == nil {
+		return nil, errors.New("config is nil")
+	}
+	if h == nil {
+		return nil, errors.New("handler is nil")
+	}
 
-	return s, nil
+	httpServer := &http.Server{
+		Addr:         cfg.Host + ":" + cfg.Port,
+		Handler:      router,
+		ReadTimeout:  cfg.Timeout,
+		WriteTimeout: cfg.Timeout,
+		IdleTimeout:  cfg.Timeout,
+	}
+	return &Server{
+		cfg:        cfg,
+		httpServer: httpServer,
+	}, nil
+
 }
