@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spf13/viper"
@@ -24,6 +25,7 @@ type DBConfig struct {
 	Password  string
 	DBName    string
 	DBTimeout time.Duration
+	DBDSN     string
 }
 
 func NewConfig() *Config {
@@ -55,6 +57,9 @@ func NewDBConfig() *DBConfig {
 	password := viper.GetString("DB_PASSWORD")
 	dbName := viper.GetString("DB_NAME")
 	dbTimeout := viper.GetDuration("DB_TIMEOUT")
+	dbSSL := viper.GetString("DB_SSL")
+	DBDSN := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		user, password, host, port, dbName, dbSSL)
 
 	return &DBConfig{
 		Host:      host,
@@ -63,6 +68,7 @@ func NewDBConfig() *DBConfig {
 		Password:  password,
 		DBName:    dbName,
 		DBTimeout: dbTimeout,
+		DBDSN:     DBDSN,
 	}
 }
 
@@ -83,4 +89,5 @@ func Init() {
 	viper.SetDefault("ACCESS_TOKEN_EXPIRATION", 3600)
 	viper.SetDefault("REFRESH_TOKEN_EXPIRATION", 86400)
 	viper.SetDefault("TIMEOUT", "5s")
+	viper.SetDefault("DB_SSL", "enable")
 }
