@@ -3,6 +3,7 @@ package server
 import (
 	"auth/internal/config"
 	"auth/internal/handler"
+	"auth/internal/router"
 	"context"
 	"errors"
 	"net/http"
