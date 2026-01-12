@@ -2,14 +2,14 @@ package main
 
 import (
 	"auth/internal/config"
+	"auth/internal/handler"
 	"auth/internal/logging"
 	"auth/internal/server"
 	"context"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 
 	logger.Info("Starting server...")
 
-	h := handler.NewHandler()
+	h := handler.NewHandler(cfg)
 
 	srv, err := server.NewServer(cfg, h)
 
@@ -32,7 +32,7 @@ func main() {
 		if err := srv.Start(); err != nil {
 			logger.Fatal("Error while starting server")
 		}
-	}
+	}()
 
 	logger.Info("Server started")
 
@@ -50,11 +50,4 @@ func main() {
 	}
 
 	logger.Info("Server stopped")
-
-
-
-}
-
-func pingHandler(context *gin.Context) {
-	context.JSON(200, gin.H{"success": true})
 }
