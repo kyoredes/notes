@@ -10,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -26,11 +28,11 @@ func main() {
 	srv, err := server.NewServer(cfg, h)
 
 	if err != nil {
-		logger.Fatal("Error while starting server")
+		logger.Fatal("Error while starting server", zap.Error(err))
 	}
 	go func() {
 		if err := srv.Start(); err != nil {
-			logger.Fatal("Error while starting server")
+			logger.Fatal("Error while starting server", zap.Error(err))
 		}
 	}()
 
