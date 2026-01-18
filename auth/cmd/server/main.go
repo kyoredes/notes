@@ -11,8 +11,17 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/subosito/gotenv"
 	"go.uber.org/zap"
 )
+
+func init() {
+	logger := logging.Logger
+	err := gotenv.Load("/auth/.env")
+	if err != nil {
+		logger.Fatal("Error loading .env file", zap.Error(err))
+	}
+}
 
 func main() {
 	config.Init()
