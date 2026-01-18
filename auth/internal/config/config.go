@@ -89,5 +89,5 @@ func Init() {
 	viper.SetDefault("ACCESS_TOKEN_EXPIRATION", 3600)
 	viper.SetDefault("REFRESH_TOKEN_EXPIRATION", 86400)
 	viper.SetDefault("TIMEOUT", "5s")
-	viper.SetDefault("DB_SSL", "enable")
+	viper.SetDefault("DB_SSL", "require")
 }
